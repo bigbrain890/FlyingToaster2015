@@ -43,6 +43,7 @@ public:
 			Wait(0.005); // wait for a motor update time
 			distanceVoltage = ultraSonic.GetVoltage(); // reading raw voltage from ultra sonic into variable distanceVoltage
 			distance = distanceVoltage / 0.009766;	   // Converting raw voltage into inches with scaler.
+			SmartDashboard::PutNumber("Distance", distance); // Putting distance value from ultra sonic sensor to driver station.
 		}
 	}
 
