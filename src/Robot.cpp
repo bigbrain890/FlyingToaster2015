@@ -13,6 +13,8 @@ class Robot: public SampleRobot
 	AnalogInput ultraSonic; //eventual ultrasonic sensor for distance measuring
 	AnalogInput pot; 		  // Potentiometer for positioning of eveutual forklift
 	float chassisGyro = 0.0; //Arbitrary gyro value for 4th float gyro value of mecanum cartesian drive
+	float distanceVoltage;
+	float distance;
 
 public:
 	Robot() :
@@ -39,6 +41,8 @@ public:
 		{
 			chassis.MecanumDrive_Cartesian(gamepad.GetRawAxis(1), gamepad.GetRawAxis(2), gamepad.GetRawAxis(3), chassisGyro);
 			Wait(0.005); // wait for a motor update time
+			distanceVoltage = ultraSonic.GetVoltage(); // reading raw voltage from ultra sonic into variable distanceVoltage
+			distance = distanceVoltage / 0.009766;	   // Converting raw voltage into inches with scaler.
 		}
 	}
 
