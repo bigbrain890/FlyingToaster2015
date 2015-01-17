@@ -1,4 +1,5 @@
 #include "WPILib.h"
+#include "math.h"
 
 /**
  * This is the basic code for a mecanum drive robot. All it does is drive a macanum chassis. Field centric mecanum
@@ -15,6 +16,8 @@ class Robot: public SampleRobot
 	float chassisGyro = 0.0; //Arbitrary gyro value for 4th float gyro value of mecanum cartesian drive
 	float distanceVoltage;
 	float distance;
+	float distanceOld;
+	float roundedDistance;
 
 public:
 	Robot() :
@@ -40,11 +43,13 @@ public:
 		while (IsOperatorControl() && IsEnabled())
 		{
 			chassis.MecanumDrive_Cartesian(gamepad.GetRawAxis(1), gamepad.GetRawAxis(2), gamepad.GetRawAxis(3), chassisGyro);
-			Wait(0.005); // wait for a motor update time
+			Wait(0.0005); // wait for a motor update time
 			distanceVoltage = ultraSonic.GetVoltage(); // reading raw voltage from ultra sonic into variable distanceVoltage
-			distance = distanceVoltage / 0.009766;	   // Converting raw voltage into inches with scaler.
-			SmartDashboard::PutNumber("Distance", distance); // Putting distance value from ultra sonic sensor to driver station.
+			distance = distanceVoltage / 0.00977;	   // converting voltage to inches with scaler
+			roundedDistance = ceilf(distance * 100) / 100; // Doing calculations to round distance value.
+			SmartDashboard::PutNumber("Distance", roundedDistance); // Print the number to driver station.
 		}
+
 	}
 
 	void Test()
