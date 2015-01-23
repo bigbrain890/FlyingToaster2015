@@ -47,7 +47,7 @@ public:
 		{
 			chassis.SetInvertedMotor(chassis.kFrontLeftMotor, true); // Invert front left motor.
 			chassis.SetInvertedMotor(chassis.kFrontRightMotor, true);// Invert front right motor.
-			chassis.MecanumDrive_Cartesian(gamepad.GetRawAxis(1), gamepad.GetRawAxis(2), gamepad.GetRawAxis(3), chassisGyro);
+			chassis.MecanumDrive_Cartesian(gamepad.GetRawAxis(0), gamepad.GetRawAxis(1), gamepad.GetRawAxis(2), chassisGyro);
 			Wait(0.0005); // wait for a motor update time
 			distanceVoltage = ultraSonic.GetVoltage(); // reading raw voltage from ultra sonic into variable distanceVoltage
 			oldAngle = angle;		  // Take the last angle and store it as the old angle
