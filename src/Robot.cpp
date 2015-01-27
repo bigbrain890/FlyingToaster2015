@@ -1,7 +1,9 @@
 #include "WPILib.h"
 #include "math.h"
 #define RIGHT_STICK_X_AXIS 2
-#define LEFT_STICK_X_AXIS
+#define LEFT_STICK_X_AXIS 0
+#define LEFT_STICK_Y_AXIS 1
+
 /**
  * Author: Ethan Novilla
  * Team: #3641 The Flying Toasters
@@ -56,7 +58,7 @@ public:
 		chassis.SetSafetyEnabled(true);
 		while (IsOperatorControl() && IsEnabled())
 		{
-			chassis.ArcadeDrive(gamepad.GetRawAxis(1), gamepad.GetRawAxis(0)*-1);
+			chassis.ArcadeDrive(gamepad.GetRawAxis(1), gamepad.GetRawAxis(LEFT_STICK_X_AXIS)*-1);
 			hDriveMotor.Set(gamepad.GetRawAxis(RIGHT_STICK_X_AXIS)*-1);
 			Wait(0.0005);
 			/*while(gamepad.GetRawButton(6) == true)							// While I'm pressing button 6.
