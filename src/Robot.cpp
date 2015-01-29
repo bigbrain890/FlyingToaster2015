@@ -1,5 +1,6 @@
 #include "WPILib.h"
 #include "math.h"
+#include <sstream>
 #define RIGHT_STICK_X_AXIS 2
 #define LEFT_STICK_X_AXIS 0
 #define LEFT_STICK_Y_AXIS 1
@@ -58,8 +59,14 @@ public:
 		chassis.SetSafetyEnabled(true);
 		while (IsOperatorControl() && IsEnabled())
 		{
-			chassis.ArcadeDrive(gamepad.GetRawAxis(1), gamepad.GetRawAxis(LEFT_STICK_X_AXIS)*-1);
-			hDriveMotor.Set(gamepad.GetRawAxis(RIGHT_STICK_X_AXIS)*-1);
+			chassis.ArcadeDrive(gamepad.GetRawAxis(1), gamepad.GetRawAxis(RIGHT_STICK_X_AXIS)*-1);
+			while (gamepad.GetRawButton(6) == true)
+			{
+				chassis.ArcadeDrive(gamepad.GetRawAxis(1), gamepad.GetRawAxis(RIGHT_STICK_X_AXIS)*-1);
+				hDriveMotor.Set(gamepad.GetRawAxis(LEFT_STICK_X_AXIS)*-1);
+
+			}
+			hDriveMotor.Set(0);
 			Wait(0.0005);
 			/*while(gamepad.GetRawButton(6) == true)							// While I'm pressing button 6.
 			{
@@ -81,7 +88,7 @@ public:
 			}
 			if ((angle < upperLim) || (angle > lowerLim))
 			{
-				Wait(.001);
+				Wait(.0001);
 			}
 		}
 
@@ -95,9 +102,16 @@ public:
 		for (int i = 0; i < PORT_COUNT; i++)
 			ports[i] = pdBoard.GetCurrent(i);
 		for (int i = 0; i < PORT_COUNT; i++) {
+#if 1
+			std::ostringstream strstrm;
+			strstrm << "Current Draw " << i << ": ";
+			SmartDashboard::PutNumber(strstrm.str().c_str(), ports[i]);
+
+#else
 			char msg[64];
 			sprintf(msg, "Current Draw %d: ", i);
 			SmartDashboard::PutNumber(msg, ports[i]);	// Print that value out to the Smart Dasboard for Debug
+#endif
 		}
 #else
 		double port0 = pdBoard.GetCurrent(0);	//Read a particular current draw from a port and store it into a variable.
