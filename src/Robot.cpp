@@ -120,42 +120,42 @@ public:
 			if (manipulator.GetRawButton(5) != true && manipulator.GetRawButton(6) != true && manipulator.GetRawButton(7) != true &&
 					manipulator.GetRawButton(8) != true && manipulator.GetRawButton(9) != true && manipulator.GetRawButton(10) != true)
 			{
-			// Allows for chain movement of the two lift stages in the up direction, limiting each when they reach their max height.
-			if (lowerStagePot.GetVoltage() < lowerLiftMax && manipulator.GetRawAxis(1) < 0 )
-			{
-				lowerStage.Set(manipulator.GetRawAxis(1));
-			}
-			else if(lowerStagePot.GetVoltage() >= lowerLiftMax && manipulator.GetRawAxis(1) < 0)
-			{
-				lowerStage.Set(0);
-				if (upperStagePot.GetVoltage() <= upperLiftMax && manipulator.GetRawAxis(1) < 0)
-				{
-					upperStage.Set(manipulator.GetRawAxis(1));
-				}
-				else
-				{
-					upperStage.Set(0);
-				}
-			}
-
-			// This loop allows for the chain movement of the forklift in the downward direction, stopping it when in base position.
-			if (upperStagePot.GetVoltage() > upperLiftMin && manipulator.GetRawAxis(1) > 0)
-			{
-				upperStage.Set(manipulator.GetRawAxis(1));
-			}
-			else if(upperStagePot.GetVoltage() <= upperLiftMin && manipulator.GetRawAxis(1) > 0)
-			{
-				upperStage.Set(0);
-				if (lowerStagePot.GetVoltage() >= lowerLiftMin && manipulator.GetRawAxis(1) > 0)
+				// Allows for chain movement of the two lift stages in the up direction, limiting each when they reach their max height.
+				if (lowerStagePot.GetVoltage() < lowerLiftMax && manipulator.GetRawAxis(1) < 0 )
 				{
 					lowerStage.Set(manipulator.GetRawAxis(1));
 				}
-				else
+				else if(lowerStagePot.GetVoltage() >= lowerLiftMax && manipulator.GetRawAxis(1) < 0)
 				{
 					lowerStage.Set(0);
+					if (upperStagePot.GetVoltage() <= upperLiftMax && manipulator.GetRawAxis(1) < 0)
+					{
+						upperStage.Set(manipulator.GetRawAxis(1));
+					}
+					else
+					{
+						upperStage.Set(0);
+					}
+				}
+
+				// This loop allows for the chain movement of the forklift in the downward direction, stopping it when in base position.
+				if (upperStagePot.GetVoltage() > upperLiftMin && manipulator.GetRawAxis(1) > 0)
+				{
+					upperStage.Set(manipulator.GetRawAxis(1));
+				}
+				else if(upperStagePot.GetVoltage() <= upperLiftMin && manipulator.GetRawAxis(1) > 0)
+				{
+					upperStage.Set(0);
+					if (lowerStagePot.GetVoltage() >= lowerLiftMin && manipulator.GetRawAxis(1) > 0)
+					{
+						lowerStage.Set(manipulator.GetRawAxis(1));
+					}
+					else
+					{
+						lowerStage.Set(0);
+					}
 				}
 			}
-		}
 		}
 	}
 
