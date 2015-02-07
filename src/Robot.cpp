@@ -25,11 +25,14 @@ class Robot: public SampleRobot
 	AnalogInput ultraSonic; 		// Eventual ultrasonic sensor for distance measuring.
 	AnalogInput lowerStagePot; 	  	// Potentiometer for positioning of lower forklift stage.
 	AnalogInput upperStagePot;		// Potentiometer for positioning of upper forklift stage.
+	Encoder leftDrive;
+	Encoder rightDrive;
+	Encoder hDrive;
 	Talon hDriveMotor;				// Splitter running 2 motors on H drive system.
 	Talon lowerStage;				// Motor for running the lower stage of the fork lift.
-	Talon upperStage;				// Motor for running the upper stage of the forck lift.
+	Talon upperStage;				// Motor for running the upper stage of the fork lift.
 	Talon intakeMotor;				// Splitter running 2 motors on intake arm.
-	DoubleSolenoid rightIntake;		// Actuating right intake armin into place.
+	DoubleSolenoid rightIntake;		// Actuating right intake arm into place.
 	DoubleSolenoid leftIntake;		// Actuating left intake arm into place.
 	PowerDistributionPanel pdBoard;	// pdBoard used for hardware debug
 	std::ostringstream printDis;	// Object used to
@@ -40,6 +43,11 @@ class Robot: public SampleRobot
 	float oldAngle = 0.0; 			// Used for de-bounce loop of pot readout.
 	float upperLim;		  			// Used for de-bounce loop of pot readout.
 	float lowerLim;					// Used for de-bounce loop of pot readout.
+	double upperLiftMax = 0;
+	double upperLiftMin = 0;
+	double lowerLiftMax = 0;
+	double lowerLiftMin = 0;
+
 
 
 public:
@@ -52,9 +60,12 @@ public:
 			hDriveMotor(4),			// H drive motor.
 			lowerStage(6),
 			upperStage(7),
+			leftDrive(0),
+			rightDrive(1),
+			hDrive(2),
 			intakeMotor(5),			// 2 motors feeding off of pwm output 5
-			rightIntake(0),
-			leftIntake(1)
+			rightIntake(0, 1),
+			leftIntake(2, 3)
 
 	{
 		chassis.SetExpiration(0.1);
@@ -63,7 +74,26 @@ public:
 
 	void Autonomous()
 	{
+		bool button1 = SmartDashboard::GetBoolean("DB/Button 0", false);
+		bool button2 = SmartDashboard::GetBoolean("DB/Button 1", false);
+		bool button3 = SmartDashboard::GetBoolean("DB/Button 2", false);
+		bool button4 = SmartDashboard::GetBoolean("DB/Button 3", false);
 
+		while (IsAutonomous() && IsEnabled() && (button1 == true))
+		{
+
+		}
+		while (IsAutonomous() && IsEnabled() && (button2 == true))
+		{
+		}
+		while (IsAutonomous() && IsEnabled() && (button3 == true))
+		{
+
+		}
+		while (IsAutonomous() && IsEnabled() && (button4 == true))
+		{
+
+		}
 	}
 
 	void OperatorControl()
@@ -71,32 +101,79 @@ public:
 		chassis.SetSafetyEnabled(true);
 		while (IsOperatorControl() && IsEnabled())
 		{
-			chassis.ArcadeDrive(gamepad.GetRawAxis(LEFT_STICK_Y_AXIS), gamepad.GetRawAxis(RIGHT_STICK_X_AXIS)*-1);
-			while (gamepad.GetRawButton(6) == true)
-			{
-				chassis.ArcadeDrive(gamepad.GetRawAxis(LEFT_STICK_Y_AXIS), gamepad.GetRawAxis(RIGHT_STICK_X_AXIS)*-1);
-				hDriveMotor.Set(gamepad.GetRawAxis(LEFT_STICK_X_AXIS)*-1);
-
-			}
-			hDriveMotor.Set(0);
-			Wait(0.0005);
+			//Variables:
 			distanceVoltage = ultraSonic.GetVoltage(); 						// Reading raw voltage from ultra sonic into variable distanceVoltage.
 			distance = distanceVoltage / 0.00977;	   						// Converting voltage to inches with scaler.
 			roundedDistance = ceilf(distance * 100) / 100; 					// Doing calculations to round distance value.
-			SmartDashboard::PutString("DB/String 0", printDis.str().c_str());
-			oldAngle = angle;		  										// Take the last angle and store it as the old angle.
-			upperLim = oldAngle + 0.01;										// Set an upper limit to compare new angle to
-			lowerLim = oldAngle - 0.01;										// Set a lower limit to compare new angle to
-			if ((angle > upperLim) || (angle < lowerLim))					// If angle has actually changed a considerable amount...
+			PotDeBouncePrint();												// Calling function PotDeBouncePrint to print Pot to Station.
+
+			//Operations:
+			if (gamepad.GetRawButton(6) == true) //Should not be a nested while loop, you will stop execution of other items.
 			{
-				SmartDashboard::PutNumber("Angle", angle);  				// Print it out to the dashboard.
+				chassis.ArcadeDrive(gamepad.GetRawAxis(LEFT_STICK_Y_AXIS), gamepad.GetRawAxis(RIGHT_STICK_X_AXIS)*-1);
+				hDriveMotor.Set(gamepad.GetRawAxis(LEFT_STICK_X_AXIS)*-1);
 			}
-			if ((angle < upperLim) || (angle > lowerLim))
+			else{
+				chassis.ArcadeDrive(gamepad.GetRawAxis(LEFT_STICK_Y_AXIS), gamepad.GetRawAxis(RIGHT_STICK_X_AXIS)*-1);
+			}
+
+			if (manipulator.GetRawButton(5) != true && manipulator.GetRawButton(6) != true && manipulator.GetRawButton(7) != true &&
+					manipulator.GetRawButton(8) != true && manipulator.GetRawButton(9) != true && manipulator.GetRawButton(10) != true)
 			{
-				Wait(.0001);
+			// Allows for chain movement of the two lift stages in the up direction, limiting each when they reach their max height.
+			if (lowerStagePot.GetVoltage() < lowerLiftMax && manipulator.GetRawAxis(1) < 0 )
+			{
+				lowerStage.Set(manipulator.GetRawAxis(1));
+			}
+			else if(lowerStagePot.GetVoltage() >= lowerLiftMax && manipulator.GetRawAxis(1) < 0)
+			{
+				lowerStage.Set(0);
+				if (upperStagePot.GetVoltage() <= upperLiftMax && manipulator.GetRawAxis(1) < 0)
+				{
+					upperStage.Set(manipulator.GetRawAxis(1));
+				}
+				else
+				{
+					upperStage.Set(0);
+				}
+			}
+
+			// This loop allows for the chain movement of the forklift in the downward direction, stopping it when in base position.
+			if (upperStagePot.GetVoltage() > upperLiftMin && manipulator.GetRawAxis(1) > 0)
+			{
+				upperStage.Set(manipulator.GetRawAxis(1));
+			}
+			else if(upperStagePot.GetVoltage() <= upperLiftMin && manipulator.GetRawAxis(1) > 0)
+			{
+				upperStage.Set(0);
+				if (lowerStagePot.GetVoltage() >= lowerLiftMin && manipulator.GetRawAxis(1) > 0)
+				{
+					lowerStage.Set(manipulator.GetRawAxis(1));
+				}
+				else
+				{
+					lowerStage.Set(0);
+				}
 			}
 		}
+		}
+	}
 
+	void PotDeBouncePrint()
+	{
+		SmartDashboard::PutString("DB/String 0", printDis.str().c_str());
+		oldAngle = angle;		  										// Take the last angle and store it as the old angle.
+		upperLim = oldAngle + 0.01;										// Set an upper limit to compare new angle to
+		lowerLim = oldAngle - 0.01;										// Set a lower limit to compare new angle to
+
+		if ((angle > upperLim) || (angle < lowerLim))					// If angle has actually changed a considerable amount...
+		{
+			SmartDashboard::PutNumber("Angle", angle);  				// Print it out to the dashboard.
+		}
+		if ((angle < upperLim) || (angle > lowerLim))
+		{
+			Wait(.0001);
+		}
 	}
 
 	void Test()
