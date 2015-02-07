@@ -71,42 +71,32 @@ public:
 		chassis.SetSafetyEnabled(true);
 		while (IsOperatorControl() && IsEnabled())
 		{
-			//Variables:
-			distanceVoltage = ultraSonic.GetVoltage(); 						// Reading raw voltage from ultra sonic into variable distanceVoltage.
-			distance = distanceVoltage / 0.00977;	   						// Converting voltage to inches with scaler.
-			roundedDistance = ceilf(distance * 100) / 100; 					// Doing calculations to round distance value.
-			PotDeBouncePrint();												// Calling function PotDeBouncePrint to print Pot to Station.
-
-			//Operations:
-			if (gamepad.GetRawButton(6) == true) //Should not be a nested while loop, you will stop execution of other items.
+			chassis.ArcadeDrive(gamepad.GetRawAxis(LEFT_STICK_Y_AXIS), gamepad.GetRawAxis(RIGHT_STICK_X_AXIS)*-1);
+			while (gamepad.GetRawButton(6) == true)
 			{
 				chassis.ArcadeDrive(gamepad.GetRawAxis(LEFT_STICK_Y_AXIS), gamepad.GetRawAxis(RIGHT_STICK_X_AXIS)*-1);
 				hDriveMotor.Set(gamepad.GetRawAxis(LEFT_STICK_X_AXIS)*-1);
+
 			}
-			else{
-				chassis.ArcadeDrive(gamepad.GetRawAxis(LEFT_STICK_Y_AXIS), gamepad.GetRawAxis(RIGHT_STICK_X_AXIS)*-1);
+			hDriveMotor.Set(0);
+			Wait(0.0005);
+			distanceVoltage = ultraSonic.GetVoltage(); 						// Reading raw voltage from ultra sonic into variable distanceVoltage.
+			distance = distanceVoltage / 0.00977;	   						// Converting voltage to inches with scaler.
+			roundedDistance = ceilf(distance * 100) / 100; 					// Doing calculations to round distance value.
+			SmartDashboard::PutString("DB/String 0", printDis.str().c_str());
+			oldAngle = angle;		  										// Take the last angle and store it as the old angle.
+			upperLim = oldAngle + 0.01;										// Set an upper limit to compare new angle to
+			lowerLim = oldAngle - 0.01;										// Set a lower limit to compare new angle to
+			if ((angle > upperLim) || (angle < lowerLim))					// If angle has actually changed a considerable amount...
+			{
+				SmartDashboard::PutNumber("Angle", angle);  				// Print it out to the dashboard.
 			}
-
-
+			if ((angle < upperLim) || (angle > lowerLim))
+			{
+				Wait(.0001);
+			}
 		}
 
-	}
-
-	void PotDeBouncePrint()
-	{
-		SmartDashboard::PutString("DB/String 0", printDis.str().c_str());
-		oldAngle = angle;		  										// Take the last angle and store it as the old angle.
-		upperLim = oldAngle + 0.01;										// Set an upper limit to compare new angle to
-		lowerLim = oldAngle - 0.01;										// Set a lower limit to compare new angle to
-
-		if ((angle > upperLim) || (angle < lowerLim))					// If angle has actually changed a considerable amount...
-		{
-			SmartDashboard::PutNumber("Angle", angle);  				// Print it out to the dashboard.
-		}
-		if ((angle < upperLim) || (angle > lowerLim))
-		{
-			Wait(.0001);
-		}
 	}
 
 	void Test()
