@@ -42,11 +42,13 @@ class Robot: public SampleRobot
 	float oldAngle = 0.0; 			// Used for de-bounce loop of pot readout.
 	float upperLim;		  			// Used for de-bounce loop of pot readout.
 	float lowerLim;					// Used for de-bounce loop of pot readout.
+	float Proportion = 0.9;         // This is the P in PID, a.k.a proportion.   !!!!TUNE THIS FOR CHANGE IN ACCELERATION!!!!
 	double upperLiftMax = 0;
 	double upperLiftMin = 0;
 	double lowerLiftMax = 0;
 	double lowerLiftMin = 0;
-
+	double LoadSetPoint = 1.5;         // This integer is used as the PID Loops set-point.
+	double PickUpSetPoint = 1;
 
 
 public:
@@ -114,6 +116,7 @@ public:
 		while (IsOperatorControl() && IsEnabled())
 		{
 			PotDeBouncePrint();												// Calling function PotDeBouncePrint to print Pot to Station.
+			//H-Drive
 			if (gamepad.GetRawButton(6) == true) //Should not be a nested while loop, you will stop execution of other items.
 			{
 				chassis.ArcadeDrive(gamepad.GetRawAxis(LEFT_STICK_Y_AXIS), gamepad.GetRawAxis(RIGHT_STICK_X_AXIS)*-1);
@@ -122,7 +125,12 @@ public:
 			else{
 				chassis.ArcadeDrive(gamepad.GetRawAxis(LEFT_STICK_Y_AXIS), gamepad.GetRawAxis(RIGHT_STICK_X_AXIS)*-1);
 			}
+			//PID
+			if (manipulator.GetRawButton(5) == true){
+				lowerStage.Set(PIDLoop(LoadSetpoint));
+			}
 
+			//Two-Stage Combined Control Using x-axis of Logitech Joystick Attack 3
 			if (manipulator.GetRawButton(5) != true && manipulator.GetRawButton(6) != true && manipulator.GetRawButton(7) != true &&
 					manipulator.GetRawButton(8) != true && manipulator.GetRawButton(9) != true && manipulator.GetRawButton(10) != true)
 			{
@@ -163,6 +171,14 @@ public:
 				}
 			}
 		}
+	}
+
+	double  PIDloop(double SetPoint) //Currently only setup for Proportion
+	{
+		double MotorOut = 0;
+		double Offset = SetPoint - lowerStagePot; // Difference between Pot and desired angle
+		MotorOut = Proportion * Offset; //That difference is then multiplied by the P constant
+		return MotorOut;
 	}
 
 	void PotDeBouncePrint()
