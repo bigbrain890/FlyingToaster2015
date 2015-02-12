@@ -47,7 +47,7 @@ class Robot: public SampleRobot
 	double upperLiftMin = 0;
 	double lowerLiftMax = 0;
 	double lowerLiftMin = 0;
-	double LoadSetPoint = 1.5;         // This integer is used as the PID Loops set-point.
+	float LoadSetPoint = 1.5;         // This integer is used as the PID Loops set-point.
 	double PickUpSetPoint = 1;
 
 
@@ -127,7 +127,7 @@ public:
 			}
 			//PID
 			if (manipulator.GetRawButton(5) == true){
-				lowerStage.Set(PIDLoop(LoadSetpoint));
+				lowerStage.Set(PIDloop(LoadSetPoint));
 			}
 
 			//Two-Stage Combined Control Using x-axis of Logitech Joystick Attack 3
@@ -173,10 +173,10 @@ public:
 		}
 	}
 
-	double  PIDloop(double SetPoint) //Currently only setup for Proportion
+	float  PIDloop(float SetPoint) //Currently only setup for Proportion
 	{
-		double MotorOut = 0;
-		double Offset = SetPoint - lowerStagePot; // Difference between Pot and desired angle
+		float MotorOut = 0;
+		double Offset = SetPoint - lowerStagePot.GetVoltage(); // Difference between Pot and desired angle
 		MotorOut = Proportion * Offset; //That difference is then multiplied by the P constant
 		return MotorOut;
 	}
