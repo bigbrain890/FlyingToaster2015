@@ -22,10 +22,11 @@ class Robot: public SampleRobot
 	RobotDrive chassis; 			// Object for robot movement.
 	Joystick gamepad; 				// Logitech Dual Action for drive control.
 	Joystick manipulator;   		// Object for later arm manipulator.
+	AnalogInput ultraSonic; 		// Eventual ultrasonic sensor for distance measuring.
 	AnalogInput lowerStagePot; 	  	// Potentiometer for positioning of lower forklift stage.
 	AnalogInput upperStagePot;		// Potentiometer for positioning of upper forklift stage.
-	Encoder leftDriveEncoder;
-	Encoder rightDriveEncoder;
+	Encoder leftDrive;
+	Encoder rightDrive;
 	Encoder hDrive;
 	Talon hDriveMotor;				// Splitter running 2 motors on H drive system.
 	Talon lowerStage;				// Motor for running the lower stage of the fork lift.
@@ -58,17 +59,15 @@ public:
 			manipulator(1),			// Manipulator USB plug.
 			lowerStagePot (1), 		// Sensor feeding data into Analog input port 1.
 			upperStagePot (2),		// Sensor feeding data into Analog input port 2.
-			leftDriveEncoder(2,3),
-			rightDriveEncoder(0,1),
-			hDrive(4,5),
 			hDriveMotor(4),			// H drive motor.
 			lowerStage(6),
 			upperStage(7),
-			intakeMotor(5),		// 2 motors feeding off of pwm output 5
+			leftDrive(0),
+			rightDrive(1),
+			hDrive(2),
+			intakeMotor(5),			// 2 motors feeding off of pwm output 5
 			rightIntake(0, 1),
-			leftIntake(2,3)
-
-
+			leftIntake(2, 3)
 
 	{
 		chassis.SetExpiration(0.1);
@@ -77,9 +76,6 @@ public:
 
 	void Autonomous()
 	{
-		leftDriveEncoder.SetDistancePerPulse(0.076199111842);
-		rightDriveEncoder.SetDistancePerPulse(0.076199111842);
-		double distance = 0;
 		bool button1 = SmartDashboard::GetBoolean("DB/Button 0", false);
 		bool button2 = SmartDashboard::GetBoolean("DB/Button 1", false);
 		bool button3 = SmartDashboard::GetBoolean("DB/Button 2", false);
@@ -87,14 +83,6 @@ public:
 
 		while (IsAutonomous() && IsEnabled() && (button1 == true))
 		{
-			rightDriveEncoder.Reset();
-			chassis.TankDrive(0,.3);
-			distance = rightDriveEncoder.GetDistance();
-			if (distance >= 19)
-			{
-				chassis.TankDrive(0.0,0.0);
-			}
-
 
 		}
 		while (IsAutonomous() && IsEnabled() && (button2 == true))
@@ -115,8 +103,17 @@ public:
 		chassis.SetSafetyEnabled(true);
 		while (IsOperatorControl() && IsEnabled())
 		{
+			//Variables:
+			distanceVoltage = ultraSonic.GetVoltage(); 						// Reading raw voltage from ultra sonic into variable distanceVoltage.
+			distance = distanceVoltage / 0.00977;	   						// Converting voltage to inches with scaler.
+			roundedDistance = ceilf(distance * 100) / 100; 					// Doing calculations to round distance value.
 			PotDeBouncePrint();												// Calling function PotDeBouncePrint to print Pot to Station.
+<<<<<<< HEAD
 			//H-Drive
+=======
+
+			//Operations:
+>>>>>>> parent of 30fc482... Yay Encoders (not sure if they work yet)
 			if (gamepad.GetRawButton(6) == true) //Should not be a nested while loop, you will stop execution of other items.
 			{
 				chassis.ArcadeDrive(gamepad.GetRawAxis(LEFT_STICK_Y_AXIS), gamepad.GetRawAxis(RIGHT_STICK_X_AXIS)*-1);
